@@ -99,6 +99,8 @@ void QmlAVPlayer::classBegin()
 
 void QmlAVPlayer::componentComplete()
 {
+    mpPlayer->setBufferValue(1);
+
     // TODO: set player parameters
     if (mSource.isValid() && (mAutoLoad || mAutoPlay)) {
         mpPlayer->setFile(QUrl::fromPercentEncoding(mSource.toEncoded()));
