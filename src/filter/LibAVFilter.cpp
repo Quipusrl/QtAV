@@ -298,9 +298,11 @@ public:
         , pixfmt(QTAV_PIX_FMT_C(NONE))
         , width(0)
         , height(0)
+        , sar(0)
     {}
     AVPixelFormat pixfmt;
     int width, height;
+    float sar;
 };
 
 LibAVFilterVideo::LibAVFilterVideo(QObject *parent)
@@ -328,6 +330,7 @@ void LibAVFilterVideo::process(Statistics *statistics, VideoFrame *frame)
         d.width = frame->width();
         d.height = frame->height();
         d.pixfmt = (AVPixelFormat)frame->pixelFormatFFmpeg();
+        d.sar = frame->displayAspectRatio() * d.height / d.width;
     }
     bool ok = pushVideoFrame(frame, changed);
     //if (old != status())
@@ -354,13 +357,13 @@ QString LibAVFilterVideo::sourceArguments() const
 {
     DPTR_D(const LibAVFilterVideo);
 #if QTAV_USE_LIBAV(LIBAVFILTER)
-    return QString("%1:%2:%3:%4:%5:%6:%7")
+    return QString("%1:%2:%3:%4:%5:%6")
 #else
-    return QString("video_size=%1x%2:pix_fmt=%3:time_base=%4/%5:pixel_aspect=%6/%7")
+    return QString("video_size=%1x%2:pix_fmt=%3:time_base=%4/%5:pixel_aspect=%6")
 #endif
             .arg(d.width).arg(d.height).arg(d.pixfmt)
             .arg(1).arg(AV_TIME_BASE) //time base 1/1?
-            .arg(1).arg(1) //sar
+            .arg(d.sar) //sar
             ;
 }
 
