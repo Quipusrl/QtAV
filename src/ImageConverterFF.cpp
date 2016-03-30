@@ -26,6 +26,10 @@
 #include "QtAV/private/prepost.h"
 #include "utils/Logger.h"
 
+#ifdef _MSC_VER
+#include <windows.h>
+#endif
+
 namespace QtAV {
 
 ImageConverterId ImageConverterId_FF = mkid::id32base36_6<'F', 'F', 'm', 'p', 'e', 'g'>::value;
@@ -135,7 +139,18 @@ bool ImageConverterFF::convert(const quint8 *const srcSlice[], const int srcStri
         pic_out.linesize[0] = w_out * 4;
     }
 #endif //PREPAREDATA_NO_PICTURE
+#ifdef _MSC_VER
+    int result_h;
+    __try {
+        result_h = sws_scale(d.sws_ctx, srcSlice, srcStride, 0, d.h_in, d.picture.data, d.picture.linesize);
+    }
+    __except (EXCEPTION_EXECUTE_HANDLER) {
+        qDebug("sws scaler crashed");
+        return false;
+    }
+#else
     int result_h = sws_scale(d.sws_ctx, srcSlice, srcStride, 0, d.h_in, d.picture.data, d.picture.linesize);
+#endif
     if (result_h != d.h_out) {
         qDebug("convert failed: %d, %d", result_h, d.h_out);
         return false;
